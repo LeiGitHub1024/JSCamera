@@ -1,0 +1,40 @@
+.section {
+    display: flex;
+    justify-content: start;
+}
+
+.part1 {
+    width: 80vw;
+    display: flex;
+    flex-direction: column;
+}
+
+#video {
+    width: 79vw;
+    align-self: center;
+}
+
+.buttons {}
+
+.part2 {
+    width: 20vw;
+}
+
+#screenshots {
+    width: 19vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#screenshots img {
+    width: 19vw;
+    align-self: center;
+}
+
+.footer {
+    height: 10rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

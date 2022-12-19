@@ -13,6 +13,9 @@
     const btnScreenshot = document.querySelector("#btnScreenshot");
     const btnChangeCamera = document.querySelector("#btnChangeCamera");
     const screenshotsContainer = document.querySelector("#screenshots");
+    const brightVideo = document.querySelector("#brightVideo");
+
+    const myCanvas = document.getElementById("myCanvas")
     const canvas = document.querySelector("#canvas");
     const devicesSelect = document.querySelector("#devicesSelect");
 
@@ -20,14 +23,14 @@
     const constraints = {
         video: {
             width: {
-                min: 1280,
-                ideal: 1920,
-                max: 2560,
+                min: 128,
+                ideal: 192,
+                max: 256,
             },
             height: {
-                min: 720,
-                ideal: 1080,
-                max: 1440,
+                min: 72,
+                ideal: 108,
+                max: 144,
             },
         },
     };
@@ -38,19 +41,49 @@
     // current video stream
     let videoStream;
 
+    async function getLightImg(llImg) {
+        const response = await fetch('http://127.0.0.1:5000/llie', {
+            method: 'POST',
+            body: JSON.stringify({
+                image_base64: llImg
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        let data = await response.json()
+            // console.log(data)
+        return data.image
+
+    }
+
     // handle events
     // play
     btnPlay.addEventListener("click", function() {
         video.play();
-        btnPlay.classList.add("is-hidden");
-        btnPause.classList.remove("is-hidden");
+        var lightImg = document.createElement("img");
+        brightVideo.prepend(lightImg);
+
+
+        (async function drawFrame() {
+            //让最底下的canvas绘制一张图
+            const img = document.createElement("img");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext("2d").drawImage(video, 0, 0);
+            img.src = canvas.toDataURL('image/jpeg');
+            //将这张图传给后端
+            const lightImgBase64 = await getLightImg(img.src)
+            lightImg.src = lightImgBase64
+
+            requestAnimationFrame(drawFrame);
+        })();
+
     });
 
     // pause
     btnPause.addEventListener("click", function() {
         video.pause();
-        btnPause.classList.add("is-hidden");
-        btnPlay.classList.remove("is-hidden");
     });
 
     // take screenshot
@@ -59,14 +92,22 @@
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         canvas.getContext("2d").drawImage(video, 0, 0);
-        img.src = canvas.toDataURL("image/png");
-        screenshotsContainer.prepend(img);
+        img.src = canvas.toDataURL('image/jpeg');
+
+        // var context = myCanvas.getContext('2d');
+        (async function drawFrame() {
+            const lightImgBase64 = await getLightImg(img.src)
+            var lightImg = document.createElement("img");
+            lightImg.src = lightImgBase64
+                // context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            screenshotsContainer.prepend(lightImg);
+            // requestAnimationFrame(drawFrame);
+        })();
     });
 
     // switch camera
     btnChangeCamera.addEventListener("click", function() {
         useFrontCamera = !useFrontCamera;
-
         initializeCamera();
     });
 
